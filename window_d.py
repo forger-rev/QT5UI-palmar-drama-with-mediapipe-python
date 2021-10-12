@@ -12,13 +12,15 @@ from PyQt5 import QtCore, QtGui, QtWidgets
 from PyQt5.QtWidgets import QApplication, QWidget, QPushButton
 from PyQt5.QtGui import QIcon
 from PyQt5.QtCore import Qt
+from PyQt5.QtMultimedia import QMediaContent, QMediaPlayer
+from PyQt5.QtMultimediaWidgets import QVideoWidget
 import sys
 
 
 class Ui_MainWindow(object):
     def setupUi(self, MainWindow):
         MainWindow.setObjectName("MainWindow")
-        # MainWindow.resize(960,1000)
+        MainWindow.resize(960,1000)
         MainWindow.setGeometry(-2, 33, 1920, 1000)
         sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Fixed, QtWidgets.QSizePolicy.Fixed)
         sizePolicy.setHorizontalStretch(0)
@@ -27,6 +29,7 @@ class Ui_MainWindow(object):
         MainWindow.setSizePolicy(sizePolicy)
         MainWindow.setMinimumSize(QtCore.QSize(1920,1000))
         MainWindow.setMaximumSize(QtCore.QSize(1920,1000))
+
         self.centralwidget = QtWidgets.QWidget(MainWindow)
         self.centralwidget.setObjectName("centralwidget")
         self.groupBoxImageOrVideo = QtWidgets.QGroupBox(self.centralwidget)
@@ -41,16 +44,19 @@ class Ui_MainWindow(object):
         self.labelImageOrVideo.setScaledContents(True)
         self.labelImageOrVideo.setAlignment(QtCore.Qt.AlignCenter)
         self.labelImageOrVideo.setObjectName("labelImageOrVideo")
+
         self.groupBoxVideoSample = QtWidgets.QGroupBox(self.centralwidget)
         self.groupBoxVideoSample.setGeometry(QtCore.QRect(10, 402, 940, 547))
         self.groupBoxVideoSample.setAutoFillBackground(True)
         self.groupBoxVideoSample.setObjectName("groupBoxVideoSample")
-        self.labelVideoSample = QtWidgets.QLabel(self.groupBoxVideoSample)
+        
+        self.labelVideoSample = QVideoWidget(self.groupBoxVideoSample)# = QtWidgets.QLabel(self.groupBoxVideoSample)
         self.labelVideoSample.setGeometry(QtCore.QRect(10, 20, 920, 517))
-        self.labelVideoSample.setText("")
-        self.labelVideoSample.setPixmap(QtGui.QPixmap(""))
-        self.labelVideoSample.setScaledContents(True)
+        # self.labelVideoSample.setText("")
+        # self.labelVideoSample.setPixmap(QtGui.QPixmap(""))
+        # self.labelVideoSample.setScaledContents(True)
         self.labelVideoSample.setObjectName("labelVideoSample")
+
         self.groupBoxLog = QtWidgets.QGroupBox(self.centralwidget)
         self.groupBoxLog.setGeometry(QtCore.QRect(240, 20, 710, 370))
         self.groupBoxLog.setAutoFillBackground(True)

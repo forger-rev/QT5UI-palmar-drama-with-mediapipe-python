@@ -1,9 +1,14 @@
+from cv2 import data
+from oauth2client.service_account import ServiceAccountCredentials as SAC
+import gspread
 from PyQt5.QtGui import QPixmap, QIcon
 import numpy as np
 from window_d import Ui_MainWindow
 from PyQt5.QtWidgets import QApplication, QMainWindow, QFileDialog, QInputDialog, QApplication
+from PyQt5.QtMultimedia import QMediaContent, QMediaPlayer, QMediaPlaylist
+from PyQt5.QtMultimediaWidgets import QVideoWidget
 from PyQt5 import QtCore, QtGui, QtWidgets
-from PyQt5.QtCore import Qt
+from PyQt5.QtCore import Qt, QUrl
 import sys
 import cv2
 # from hand import HandDetector
@@ -11,12 +16,18 @@ import cv2
 import time
 import copy
 import argparse
-import numpy as np
 import mediapipe as mp
 import csv
 import pandas as pd
 import pickle
 # from utils import CvFpsCalc
+
+Json = r'D:\Academy\mediapipe\QT5UI-palmar-drama-with-mediapipe-python_2\QT5UI-palmar-drama-with-mediapipe-python-main\QT5UI-palmar-drama-with-mediapipe-python-main\onyx-silo-328614-10cfc73f5e5f.json' 
+Url = ['https://spreadsheets.google.com/feeds']
+Connect = SAC.from_json_keyfile_name(Json, Url)
+GoogleSheets = gspread.authorize(Connect)
+Sheet = GoogleSheets.open_by_key('1eBU8ruawsg7xQ523vcf-fFX8VedEZK6ln1KyA-RxRmA') # 這裡請輸入妳自己的試算表代號
+Sheets = Sheet.sheet1 
 
 
 def get_args():
@@ -627,7 +638,7 @@ def calc_palm_moment(image, landmarks):
 
 def detection(image,lh_l, fa_l, po_l, dp, self):
 
-    with open('FULL_S_LR.pkl', 'rb') as f:
+    with open('./QT5UI-palmar-drama-with-mediapipe-python-main/FULL_S_LR.pkl', 'rb') as f:
         model = pickle.load(f)
 
     lh_list = [0,12]
@@ -903,16 +914,20 @@ def detection(image,lh_l, fa_l, po_l, dp, self):
             accu = 10
     
     
-    con = list(range(3))
+    con = list(range(2))
     con[0] = gclass
-    con[1] = str(round(body_language_prob[np.argmax(body_language_prob)],3))
-    con[2] = accu*100//1/100
+    con[1] = str((round(body_language_prob[np.argmax(body_language_prob)],3))+(accu*100//1)/100)
+    
+    Sheets.append_row(con)
+    # con[2] = accu*100//1/100
 
-    with open('output_test.csv', mode='a', newline='') as f:
-        csv_writer = csv.writer(f, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
-        csv_writer.writerow(con)
+    # with open('try.csv', mode='a', newline='') as f:
+    #    csv_writer = csv.writer(f, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
+    #    csv_writer.writerow(con)
 
-    img_s = cv2.imread('image/result_default.png')
+
+
+    img_s = cv2.imread('./QT5UI-palmar-drama-with-mediapipe-python-main/image/result_default.png')
 
     # Get status box
     cv2.rectangle(img_s, (0,0), (242, 112), (255, 255, 255), -1)
@@ -1140,6 +1155,11 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.mode_key = 0
         self.results = None
 
+        self.mediaPlayer = (QMediaPlayer(None, QMediaPlayer.VideoSurface))
+        self.mediaPlayer.setVideoOutput(self.labelVideoSample)
+
+        self.playlist = QMediaPlaylist()
+        
     def maya(self, word=None, speed=200, action=True):
         gif = QtGui.QMovie(f'src/{word}.gif')
         self.labelVideoSample.setMovie(gif)
@@ -1186,9 +1206,9 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         if self.camera == True :
             self.cap.release()
  
-        self.maya(action=False)
+        # self.maya(action=False)
         label_show(label=self.labelResult, image=cv2.imread('src/result_default.png'))
-        label_show(label=self.labelVideoSample, image=cv2.imread('src/MAYA_default.png'))
+        # label_show(label=self.labelVideoSample, image=cv2.imread('src/MAYA_default.png'))
         label_show(label=self.labelImageOrVideo, image=cv2.imread('src/default.png'))
         app = QApplication.instance()
         # 退出应用程序
@@ -1396,98 +1416,114 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             label_show(label=self.labelImageOrVideo, image=debug_image)
             cv2.waitKey(int(1000 / self.videoFPS))
 
-    def load_video_T1(self):   
-        self.cap = cv2.VideoCapture('./videos/YOU.mp4')
+    def load_video_T1(self):
+        self.playlist.clear()
+        f = './QT5UI-palmar-drama-with-mediapipe-python-main/videos/ME.mp4'  
+        self.playlist.addMedia(QMediaContent(QUrl.fromLocalFile(f))) 
+        # self.mediaPlayer.setMedia(QMediaContent(QUrl.fromLocalFile(f)))
 
-        if self.cap == None :
+        if self.mediaPlayer == None :
+            self.print_log(log_words=f'Unable to find the video file. Check the location.')
+        else:    
+            self.print_log(log_words=f'load video:ME training video')
+  
+            self.playlist.setCurrentIndex(1)   
+            self.playlist.setPlaybackMode(QMediaPlaylist.CurrentItemInLoop)
+            self.mediaPlayer.setPlaylist(self.playlist)
+            self.mediaPlayer.play()         
+                   
+                                  
+        # while True:
+        #     ret, image = self.cap.read()
+        #     if not ret:
+        #         break
+        #     label_show(label=self.labelVideoSample, image=image)
+        #     cv2.waitKey(int(1000 / self.videoFPS))
+
+    def load_video_T2(self):
+        self.playlist.clear()   
+        f = './QT5UI-palmar-drama-with-mediapipe-python-main/videos/YOU.mp4'  
+        self.playlist.addMedia(QMediaContent(QUrl.fromLocalFile(f))) 
+        # self.mediaPlayer.setMedia(QMediaContent(QUrl.fromLocalFile(f)))
+
+        if self.mediaPlayer == None :
             self.print_log(log_words=f'Unable to find the video file. Check the location.')
         else:    
             self.print_log(log_words=f'load video:YOU training video')
+  
+            self.playlist.setCurrentIndex(1)   
+            self.playlist.setPlaybackMode(QMediaPlaylist.CurrentItemInLoop)
+            self.mediaPlayer.setPlaylist(self.playlist)
+            self.mediaPlayer.play()  
 
-        while True:
-            ret, image = self.cap.read()
-            if not ret:
-                break
-            label_show(label=self.labelVideoSample, image=image)
-            cv2.waitKey(int(1000 / self.videoFPS))
+    def load_video_T3(self):
+        self.playlist.clear()   
+        f = './QT5UI-palmar-drama-with-mediapipe-python-main/videos/Third.mp4'  
+        self.playlist.addMedia(QMediaContent(QUrl.fromLocalFile(f))) 
+        # self.mediaPlayer.setMedia(QMediaContent(QUrl.fromLocalFile(f)))
 
-    def load_video_T2(self):   
-        self.cap = cv2.VideoCapture('./videos/ME.mp4')
-
-        if self.cap == None :
+        if self.mediaPlayer == None :
             self.print_log(log_words=f'Unable to find the video file. Check the location.')
         else:    
-            self.print_log(log_words=f'load video:YOU training video')
-
-        while True:
-            ret, image = self.cap.read()
-            if not ret:
-                break
-            label_show(label=self.labelVideoSample, image=image)
-            cv2.waitKey(int(1000 / self.videoFPS))
-
-    def load_video_T3(self):   
-        self.cap = cv2.VideoCapture('./videos/Third.mp4')
-
-        if self.cap == None :
-            self.print_log(log_words=f'Unable to find the video file. Check the location.')
-        else:    
-            self.print_log(log_words=f'load video:YOU training video')
-
-        while True:
-            ret, image = self.cap.read()
-            if not ret:
-                break
-            label_show(label=self.labelVideoSample, image=image)
-            cv2.waitKey(int(1000 / self.videoFPS))
+            self.print_log(log_words=f'load video:Third training video')
+  
+            self.playlist.setCurrentIndex(1)   
+            self.playlist.setPlaybackMode(QMediaPlaylist.CurrentItemInLoop)
+            self.mediaPlayer.setPlaylist(self.playlist)
+            self.mediaPlayer.play()  
 
     def load_video_T4(self):   
-        self.cap = cv2.VideoCapture('./videos/HEAD.mp4')
+        self.playlist.clear()
+        f = './QT5UI-palmar-drama-with-mediapipe-python-main/videos/HEAD.mp4'  
+        self.playlist.addMedia(QMediaContent(QUrl.fromLocalFile(f))) 
+        # self.mediaPlayer.setMedia(QMediaContent(QUrl.fromLocalFile(f)))
 
-        if self.cap == None :
+        if self.mediaPlayer == None :
             self.print_log(log_words=f'Unable to find the video file. Check the location.')
         else:    
-            self.print_log(log_words=f'load video:YOU training video')
-
-        while True:
-            ret, image = self.cap.read()
-            if not ret:
-                break
-            label_show(label=self.labelVideoSample, image=image)
-            cv2.waitKey(int(1000 / self.videoFPS))
+            self.print_log(log_words=f'load video:HEAD training video')
+  
+            self.playlist.setCurrentIndex(1)   
+            self.playlist.setPlaybackMode(QMediaPlaylist.CurrentItemInLoop)
+            self.mediaPlayer.setPlaylist(self.playlist)
+            self.mediaPlayer.play() 
 
     def load_video_T5(self):   
-        self.cap = cv2.VideoCapture('./videos/Side.mp4')
+        self.playlist.clear()
+        f = './QT5UI-palmar-drama-with-mediapipe-python-main/videos/Side.mp4'  
+        self.playlist.addMedia(QMediaContent(QUrl.fromLocalFile(f))) 
+        # self.mediaPlayer.setMedia(QMediaContent(QUrl.fromLocalFile(f)))
 
-        if self.cap == None :
+        if self.mediaPlayer == None :
             self.print_log(log_words=f'Unable to find the video file. Check the location.')
         else:    
-            self.print_log(log_words=f'load video:YOU training video')
+            self.print_log(log_words=f'load video:Side training video')
+  
+            self.playlist.setCurrentIndex(1)   
+            self.playlist.setPlaybackMode(QMediaPlaylist.CurrentItemInLoop)
+            self.mediaPlayer.setPlaylist(self.playlist)
+            self.mediaPlayer.play() 
 
-        while True:
-            ret, image = self.cap.read()
-            if not ret:
-                break
-            label_show(label=self.labelVideoSample, image=image)
-            cv2.waitKey(int(1000 / self.videoFPS))
+    def load_video_T6(self):  
+        self.playlist.clear() 
+        f = './QT5UI-palmar-drama-with-mediapipe-python-main/videos/Third.mp4'  
+        self.playlist.addMedia(QMediaContent(QUrl.fromLocalFile(f))) 
+        # self.mediaPlayer.setMedia(QMediaContent(QUrl.fromLocalFile(f)))
 
-    def load_video_T6(self):   
-        self.cap = cv2.VideoCapture('./videos/YOU.mp4')
-
-        if self.cap == None :
+        if self.mediaPlayer == None :
             self.print_log(log_words=f'Unable to find the video file. Check the location.')
         else:    
-            self.print_log(log_words=f'load video:YOU training video')
-
-        while True:
-            ret, image = self.cap.read()
-            if not ret:
-                break
-            label_show(label=self.labelVideoSample, image=image)
-            cv2.waitKey(int(1000 / self.videoFPS))
+            self.print_log(log_words=f'load video:Third training video')
+  
+            self.playlist.setCurrentIndex(1)   
+            self.playlist.setPlaybackMode(QMediaPlaylist.CurrentItemInLoop)
+            self.mediaPlayer.setPlaylist(self.playlist)
+            self.mediaPlayer.play() 
 
     def clearVideo(self):
-        label_show(label=self.labelVideoSample, image=cv2.imread('src/MAYA_default.png'))
+        self.playlist.setCurrentIndex(0)   
+        self.playlist.clear()
+      
 
     def start_detect(self): 
  
@@ -1675,24 +1711,24 @@ class MainWindow(QMainWindow, Ui_MainWindow):
                 )
                 # debug_image = draw_bounding_rect(use_brect, debug_image, brect)
 
-            if (face_landmarks is None) or (pose_landmarks is None) or (right_hand_landmarks is None):
-                img_r = cv2.imread('image/result_default.png')
-                label_show(label=self.labelResult, image=img_r)
-                seconds = time.time()
-                de_sec = seconds*10
-                count = (de_sec//1)%10
-                if count == 0:
-                    self.print_log(log_words=f' [Searching for Landmarks] ')
-                status = False
+            # if (face_landmarks is None) or (pose_landmarks is None) or (right_hand_landmarks is None):
+            #     img_r = cv2.imread('image/result_default.png')
+            #     label_show(label=self.labelResult, image=img_r)
+            #     seconds = time.time()
+            #     de_sec = seconds*10
+            #     count = (de_sec//1)%10
+            #     if count == 0:
+            #         self.print_log(log_words=f' [Searching for Landmarks] ')
+            #     status = False
             
-            else:
-                if status == False :
-                    img_r = cv2.imread('image/result_default.png')
-                    cv2.putText(img_r, 'Ready...'
-                    , (15,72), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 0, 0), 2, cv2.LINE_AA)
-                    label_show(label=self.labelResult, image=img_r)
-                    self.print_log(log_words=f' [Check!] ')
-                    status = True
+            # else:
+            #     if status == False :
+            #         img_r = cv2.imread('./image/result_default.png')
+            #         cv2.putText(img_r, 'Ready...'
+            #         , (15,72), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 0, 0), 2, cv2.LINE_AA)
+            #         label_show(label=self.labelResult, image=img_r)
+            #         self.print_log(log_words=f' [Check!] ')
+            #         status = True
 
             label_show(label=self.labelImageOrVideo, image=debug_image)
             # label_show(label=self.labelImageOrVideo, image=cv2_image)
@@ -1763,7 +1799,18 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         # fig = plt.figure(figsize=(7.32,14.1))
         # ax = fig.add_subplot(111, projection="3d")
         # fig.subplots_adjust(left=0.0, right=1, bottom=0, top=1)
-                
+
+
+
+        dataTitle = ['gesture','value']
+        Sheets.clear()
+        Sheets.append_row(dataTitle)
+
+        # with open('try.csv', mode='w', newline='') as f:
+        #     csv_writer = csv.writer(f, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
+        #     csv_writer.writerow()
+
+
 
         while self.mode_key == 0 :
             # カメラキャプチャ #####################################################
@@ -1864,8 +1911,8 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             t_pose_landmarks = results.pose_world_landmarks
 
             if (face_landmarks is None) or (pose_landmarks is None) or (right_hand_landmarks is None):
-                img_r = cv2.imread('image/result_default.png')
-                label_show(label=self.labelResult, image=img_r)
+                # img_r = cv2.imread('./image/result_default.png')
+                # label_show(label=self.labelResult, image=img_r)
                 seconds = time.time()
                 de_sec = seconds*10
                 count = (de_sec//1)%10
@@ -2025,9 +2072,9 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             self.camera = False
             self.cap.release()
             self.print_log(log_words='camera has been closed')
-            self.maya(action=False)
+            # self.maya(action=False)
             label_show(label=self.labelResult, image=cv2.imread('src/result_default.png'))
-            label_show(label=self.labelVideoSample, image=cv2.imread('src/MAYA_default.png'))
+            # label_show(label=self.labelVideoSample, image=cv2.imread('src/MAYA_default.png'))
             label_show(label=self.labelImageOrVideo, image=cv2.imread('src/default.png'))
 
     def select_camera(self):
