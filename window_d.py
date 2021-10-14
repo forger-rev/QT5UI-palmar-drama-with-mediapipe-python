@@ -10,8 +10,8 @@
 
 from PyQt5 import QtCore, QtGui, QtWidgets
 from PyQt5.QtWidgets import QApplication, QWidget, QPushButton
-from PyQt5.QtGui import QIcon
-from PyQt5.QtCore import Qt
+from PyQt5.QtGui import QIcon, QPixmap
+from PyQt5.QtCore import QSize, Qt
 from PyQt5.QtMultimedia import QMediaContent, QMediaPlayer
 from PyQt5.QtMultimediaWidgets import QVideoWidget
 import sys
@@ -20,6 +20,9 @@ import sys
 class Ui_MainWindow(object):
     def setupUi(self, MainWindow):
         MainWindow.setObjectName("MainWindow")
+        MainWindow.setWindowIcon(QIcon("./QT5UI-palmar-drama-with-mediapipe-python-main/icon/PD_QT5_icon.png"))
+        
+        # MainWindow.setStyleSheet("background-color: gray;")
         MainWindow.resize(960,1000)
         MainWindow.setGeometry(-2, 33, 1920, 1000)
         sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Fixed, QtWidgets.QSizePolicy.Fixed)
@@ -107,37 +110,74 @@ class Ui_MainWindow(object):
         self.pushButton_1 = QtWidgets.QPushButton(self.groupBoxButton)
         self.pushButton_1.setGeometry(QtCore.QRect(35, 10, 120, 120))
         self.pushButton_1.setObjectName("pushButton_1")
-        self.pushButton_1.setText("001") 
+        # self.pushButton_1.setText("001")
+        self.pushButton_1.setIcon(QIcon("./QT5UI-palmar-drama-with-mediapipe-python-main/icon/PD_QT5_icon_001.png")) #icon
+        self.pushButton_1.setIconSize(QSize(120,120))
+        self.pushButton_1.setStyleSheet('QPushButton{border:0px solid;}') 
 
         self.pushButton_2 = QtWidgets.QPushButton(self.groupBoxButton)
         self.pushButton_2.setGeometry(QtCore.QRect(185, 10, 120, 120))
         self.pushButton_2.setObjectName("pushButton_2")
-        self.pushButton_2.setText("002")
+        # self.pushButton_2.setText("002")
+        self.pushButton_2.setIcon(QIcon("./QT5UI-palmar-drama-with-mediapipe-python-main/icon/PD_QT5_icon_002.png")) #icon 
+        self.pushButton_2.setIconSize(QSize(120,120))
+        self.pushButton_2.setStyleSheet('QPushButton{border:0px solid;}') 
         
         self.pushButton_3 = QtWidgets.QPushButton(self.groupBoxButton)
         self.pushButton_3.setGeometry(QtCore.QRect(335, 10, 120, 120))
         self.pushButton_3.setObjectName("pushButton_3")
-        self.pushButton_3.setText("003")
+        # self.pushButton_3.setText("003")
+        self.pushButton_3.setIcon(QIcon("./QT5UI-palmar-drama-with-mediapipe-python-main/icon/PD_QT5_icon_003.png")) #icon 
+        self.pushButton_3.setIconSize(QSize(120,120))
+        self.pushButton_3.setStyleSheet('QPushButton{border:0px solid;}') 
 
         self.pushButton_4 = QtWidgets.QPushButton(self.groupBoxButton)
         self.pushButton_4.setGeometry(QtCore.QRect(485, 10, 120, 120))
         self.pushButton_4.setObjectName("pushButton_4")
-        self.pushButton_4.setText("004")
+        # self.pushButton_4.setText("004")
+        self.pushButton_4.setIcon(QIcon("./QT5UI-palmar-drama-with-mediapipe-python-main/icon/PD_QT5_icon_004.png")) #icon
+        self.pushButton_4.setIconSize(QSize(120,120))
+        self.pushButton_4.setStyleSheet('QPushButton{border:0px solid;}')  
 
         self.pushButton_5 = QtWidgets.QPushButton(self.groupBoxButton)
         self.pushButton_5.setGeometry(QtCore.QRect(635, 10, 120, 120))
         self.pushButton_5.setObjectName("pushButton_5")
-        self.pushButton_5.setText("005")
+        # self.pushButton_5.setText("005")
+        self.pushButton_5.setIcon(QIcon("./QT5UI-palmar-drama-with-mediapipe-python-main/icon/PD_QT5_icon_005.png")) #icon 
+        self.pushButton_5.setIconSize(QSize(120,120))
+        self.pushButton_5.setStyleSheet('QPushButton{border:0px solid;}') 
         
         self.pushButton_6 = QtWidgets.QPushButton(self.groupBoxButton)
         self.pushButton_6.setGeometry(QtCore.QRect(785, 10, 120, 120))
         self.pushButton_6.setObjectName("pushButton_6")
-        self.pushButton_6.setText("006")
+        # self.pushButton_6.setText("006")
+        self.pushButton_6.setIcon(QIcon("./QT5UI-palmar-drama-with-mediapipe-python-main/icon/PD_QT5_icon_006.png")) #icon
+        self.pushButton_6.setIconSize(QSize(120,120))
+        self.pushButton_6.setStyleSheet('QPushButton{border:0px solid;}')  
 
         self.pushButton_c = QtWidgets.QPushButton(self.groupBoxButton)
         self.pushButton_c.setGeometry(QtCore.QRect(35, 140, 120, 50))
         self.pushButton_c.setObjectName("pushButton_c")
-        self.pushButton_c.setText("Clear") 
+        # self.pushButton_c.setText("Clear") 
+        self.pushButton_c.setIcon(QIcon("./QT5UI-palmar-drama-with-mediapipe-python-main/icon/PD_QT5_icon_pl_C.png")) #icon
+        self.pushButton_c.setIconSize(QSize(120,50))
+        self.pushButton_c.setStyleSheet('QPushButton{border:0px solid;}')  
+
+        self.pushButton_p = QtWidgets.QPushButton(self.groupBoxButton)
+        self.pushButton_p.setGeometry(QtCore.QRect(185, 140, 120, 50))
+        self.pushButton_p.setObjectName("pushButton_p")
+        # self.pushButton_p.setText("002")
+        self.pushButton_p.setIcon(QIcon("./QT5UI-palmar-drama-with-mediapipe-python-main/icon/PD_QT5_icon_pl_p.png")) #icon 
+        self.pushButton_p.setIconSize(QSize(120,50))
+        self.pushButton_p.setStyleSheet('QPushButton{border:0px solid;}') 
+        
+        self.pushButton_h = QtWidgets.QPushButton(self.groupBoxButton)
+        self.pushButton_h.setGeometry(QtCore.QRect(335, 140, 120, 50))
+        self.pushButton_h.setObjectName("pushButton_h")
+        # self.pushButton_3.setText("003")
+        self.pushButton_h.setIcon(QIcon("./QT5UI-palmar-drama-with-mediapipe-python-main/icon/PD_QT5_icon_pl_h.png")) #icon 
+        self.pushButton_h.setIconSize(QSize(120,50))
+        self.pushButton_h.setStyleSheet('QPushButton{border:0px solid;}') 
 
         # self.pushButton.setGeometry(QtCore.QRect(10, 520, 20, 60))
         # self.pushButton.setText("Close")          #text

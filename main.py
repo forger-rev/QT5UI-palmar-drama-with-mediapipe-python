@@ -4,10 +4,10 @@ import gspread
 import numpy as np
 from window_d import Ui_MainWindow
 from PyQt5 import QtCore, QtGui, QtWidgets
-from PyQt5.QtWidgets import QApplication, QMainWindow, QFileDialog, QInputDialog, QApplication
+from PyQt5.QtWidgets import QApplication, QMainWindow, QFileDialog, QInputDialog, QApplication, QSystemTrayIcon
 from PyQt5.QtMultimedia import QMediaContent, QMediaPlayer, QMediaPlaylist
 from PyQt5.QtMultimediaWidgets import QVideoWidget
-from PyQt5.QtCore import Qt, QUrl
+from PyQt5.QtCore import QObject, Qt, QUrl
 from PyQt5.QtGui import QPixmap, QIcon
 import sys
 import cv2
@@ -1300,6 +1300,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
     def initUI(self):
         self.setWindowTitle('Python_Mediapipe_Palmer_Drama')
+        # self.setWindowIcon(QIcon("./QT5UI-palmar-drama-with-mediapipe-python-main/icon/PD_QT5_icon.png"))
 
         self.pushButton_1.clicked.connect(self.load_video_T1)
         self.pushButton_2.clicked.connect(self.load_video_T2)
@@ -1308,6 +1309,8 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.pushButton_5.clicked.connect(self.load_video_T5)
         self.pushButton_6.clicked.connect(self.load_video_T6)
         self.pushButton_c.clicked.connect(self.clearVideo)
+        self.pushButton_p.clicked.connect(self.playVideo)
+        self.pushButton_h.clicked.connect(self.pauseVideo)
 
         self.actionLoadT_Me.triggered.connect(self.load_Me_T)
         self.actionLoadT_You.triggered.connect(self.load_You_T)
@@ -1653,6 +1656,12 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.playlist.setCurrentIndex(0)   
         self.playlist.clear()
       
+    def playVideo(self):
+        self.mediaPlayer.play()
+
+    def pauseVideo(self):
+        self.mediaPlayer.pause()
+
     def load_Me_T(self):
         self.modelFile = 1
         self.print_log(log_words=f'Change to training mode : 我_分解動作.')
@@ -1765,10 +1774,10 @@ class MainWindow(QMainWindow, Ui_MainWindow):
                 )
                 # debug_image = draw_bounding_rect(use_brect, debug_image, brect)
                 # Grab Left shoulder coords
-                coords_s = tuple(np.multiply(
+                coords_lw = tuple(np.multiply(
                             np.array(
-                                (pose_landmarks.landmark[mp.solutions.holistic.PoseLandmark.RIGHT_SHOULDER].x, 
-                                    pose_landmarks.landmark[mp.solutions.holistic.PoseLandmark.RIGHT_SHOULDER].y))
+                                (pose_landmarks.landmark[mp.solutions.holistic.PoseLandmark.LEFT_WRIST].x, 
+                                    pose_landmarks.landmark[mp.solutions.holistic.PoseLandmark.LEFT_WRIST].y))
                         , [image_height,image_width]).astype(int))
 
                 # Grab ear coords
@@ -1820,7 +1829,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
                         coords_mf_y = landmark_y
 
                 #  Check the Height of Left Hand
-                if coords_mf_y > coords_s[1]+ 100 :
+                if coords_mf_y > coords_lw[1]-50 :
                     draw_c = (255,0,0)
                 
                     cv2.rectangle(debug_image, 
@@ -1831,7 +1840,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
                                 cv2.FONT_HERSHEY_SIMPLEX, 1, (255, 255, 255), 2, cv2.LINE_AA)
 
                 else :
-                    if coords_mf_y < coords_s[1] :
+                    if coords_mf_y < coords_lw[1]-150 :
                         draw_c = (0,0,255)
                         
                         cv2.rectangle(debug_image, 
@@ -2261,5 +2270,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 if __name__ == "__main__":
     app = QApplication(sys.argv)
     MainWindow = MainWindow()
+    # TaskBarIcon = (QIcon("./QT5UI-palmar-drama-with-mediapipe-python-main/icon/PD_QT5_icon.png"))
+    # MainWindow.setWindowIcon(TaskBarIcon)
     MainWindow.show()
     sys.exit(app.exec_())
