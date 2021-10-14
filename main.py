@@ -654,8 +654,107 @@ def calc_palm_moment(image, landmarks):
 
 def detection(image,lh_l, fa_l, po_l, dp, self):
 
-    with open('./QT5UI-palmar-drama-with-mediapipe-python-main/FULL_S_LR.pkl', 'rb') as f:
-        model = pickle.load(f)
+    if self.modelFile == 0:
+        try:
+            with open('./QT5UI-palmar-drama-with-mediapipe-python-main/FULL_S_LR.pkl', 'rb') as mf:
+                model = pickle.load(mf)
+            
+            if self.modelFileStatus is True:
+                self.print_log(log_words=f'Loaded ! Model file : 全動作 ')
+                # print("Loaded ! Model file : 全動作 ")
+                self.modelFileStatus = False
+        except:
+            if self.modelFileStatus is True:
+                self.print_log(log_words=f'Fail to load he model file. Please check the file path.')
+                print("Fail to load he model file. Please check the file path.")
+                self.modelFileStatus = False
+            pass
+
+    if self.modelFile == 1:
+        try:
+            with open('./QT5UI-palmar-drama-with-mediapipe-python-main/ME_S_LR.pkl', 'rb') as mf:
+                model = pickle.load(mf)
+
+            if self.modelFileStatus is True:
+                self.print_log(log_words=f'Loaded ! Model file : 我_分解動作 ')
+                # print("Loaded ! Model file : 我_分解動作 ")
+                self.modelFileStatus = False
+        except:
+            if self.modelFileStatus is True:
+                self.print_log(log_words=f'Fail to load he model file. Please check the file path.')
+                print("Fail to load he model file. Please check the file path.")
+                self.modelFileStatus = False
+            pass
+        
+
+    if self.modelFile == 2:
+        try:
+            with open('./QT5UI-palmar-drama-with-mediapipe-python-main/YOU_S_LR.pkl', 'rb') as mf:
+                model = pickle.load(mf)
+
+            if self.modelFileStatus is True:
+                self.print_log(log_words=f'Loaded ! Model file : 你_分解動作 ')
+                # print("Loaded ! Model file : 你_分解動作 ")
+                self.modelFileStatus = False
+        except:
+            if self.modelFileStatus is True:
+                self.print_log(log_words=f'Fail to load he model file. Please check the file path.')
+                print("Fail to load he model file. Please check the file path.")
+                self.modelFileStatus = False
+            pass
+        
+
+    if self.modelFile == 3:
+        try:
+            with open('./QT5UI-palmar-drama-with-mediapipe-python-main/THIRD_S_LR.pkl', 'rb') as mf:
+                model = pickle.load(mf)
+
+            if self.modelFileStatus is True:
+                self.print_log(log_words=f'Loaded ! Model file : 他_分解動作 ')
+                # print("Loaded ! Model file : 他_分解動作 ")
+                self.modelFileStatus = False
+        except:
+            if self.modelFileStatus is True:
+                self.print_log(log_words=f'Fail to load he model file. Please check the file path.')
+                print("Fail to load he model file. Please check the file path.")
+                self.modelFileStatus = False
+            pass
+        
+
+    if self.modelFile == 4:
+        try:
+            with open('./QT5UI-palmar-drama-with-mediapipe-python-main/HEAD_S_LR.pkl', 'rb') as mf:
+                model = pickle.load(mf)
+
+            if self.modelFileStatus is True:
+                self.print_log(log_words=f'Loaded ! Model file : 晃頭_分解動作 ')
+                # print("Loaded ! Model file : 晃頭_分解動作 ")
+                self.modelFileStatus = False
+        except:
+            if self.modelFileStatus is True:
+                self.print_log(log_words=f'Fail to load he model file. Please check the file path.')
+                print("Fail to load he model file. Please check the file path.")
+                self.modelFileStatus = False
+            pass
+        
+
+    if self.modelFile == 5:
+        try:
+            with open('./QT5UI-palmar-drama-with-mediapipe-python-main/RIGHT_H_S_LR.pkl', 'rb') as mf:
+                model = pickle.load(mf)
+
+            if self.modelFileStatus is True:
+                self.print_log(log_words=f'Loaded ! Model file : 旁支_分解動作 ')
+                # print("Loaded ! Model file : 旁支_分解動作 ")
+                self.modelFileStatus = False
+        except:
+            if self.modelFileStatus is True:
+                self.print_log(log_words=f'Fail to load he model file. Please check the file path.')
+                print("Fail to load he model file. Please check the file path.")
+                self.modelFileStatus = False
+            pass
+        
+    
 
     lh_list = [0,12]
     # f_list = [10,151,9,8,168,6,197,195,5,4,1,19,94,2,164,0,11,12,13,14,15,16,17,18,200,199,175,152,
@@ -1179,6 +1278,9 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.mediaPlayer.setVideoOutput(self.labelVideoSample)
 
         self.playlist = QMediaPlaylist()
+
+        self.modelFile = 0
+        self.modelFileStatus = True
         
     def maya(self, word=None, speed=200, action=True):
         gif = QtGui.QMovie(f'src/{word}.gif')
@@ -1206,6 +1308,13 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.pushButton_5.clicked.connect(self.load_video_T5)
         self.pushButton_6.clicked.connect(self.load_video_T6)
         self.pushButton_c.clicked.connect(self.clearVideo)
+
+        self.actionLoadT_Me.triggered.connect(self.load_Me_T)
+        self.actionLoadT_You.triggered.connect(self.load_You_T)
+        self.actionLoadT_Third.triggered.connect(self.load_Third_T)
+        self.actionLoadT_Head.triggered.connect(self.load_Head_T)
+        self.actionLoadT_Side.triggered.connect(self.load_Side_T)
+        self.actionLoadT_Full.triggered.connect(self.load_Full_T)
 
 
         self.actionLoadImage.triggered.connect(self.load_image)
@@ -1544,6 +1653,29 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.playlist.setCurrentIndex(0)   
         self.playlist.clear()
       
+    def load_Me_T(self):
+        self.modelFile = 1
+        self.print_log(log_words=f'Change to training mode : 我_分解動作.')
+
+    def load_You_T(self):
+        self.modelFile = 2
+        self.print_log(log_words=f'Change to training mode : 你_分解動作.')
+
+    def load_Third_T(self):
+        self.modelFile = 3
+        self.print_log(log_words=f'Change to training mode : 他_分解動作.')
+
+    def load_Head_T(self):
+        self.modelFile = 4
+        self.print_log(log_words=f'Change to training mode : 晃頭_分解動作.')
+
+    def load_Side_T(self):
+        self.modelFile = 5
+        self.print_log(log_words=f'Change to training mode : 旁支_分解動作.')
+
+    def load_Full_T(self):
+        self.modelFile = 0
+        self.print_log(log_words=f'Change to training mode : 全動作.')
 
     def start_detect(self): 
  
