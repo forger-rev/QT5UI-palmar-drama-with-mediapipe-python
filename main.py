@@ -1,18 +1,16 @@
-from cv2 import data
+
 from oauth2client.service_account import ServiceAccountCredentials as SAC
 import gspread
-from PyQt5.QtGui import QPixmap, QIcon
 import numpy as np
 from window_d import Ui_MainWindow
+from PyQt5 import QtCore, QtGui, QtWidgets
 from PyQt5.QtWidgets import QApplication, QMainWindow, QFileDialog, QInputDialog, QApplication
 from PyQt5.QtMultimedia import QMediaContent, QMediaPlayer, QMediaPlaylist
 from PyQt5.QtMultimediaWidgets import QVideoWidget
-from PyQt5 import QtCore, QtGui, QtWidgets
 from PyQt5.QtCore import Qt, QUrl
+from PyQt5.QtGui import QPixmap, QIcon
 import sys
 import cv2
-# from hand import HandDetector
-# from predict import predict
 import time
 import copy
 import argparse
@@ -20,14 +18,18 @@ import mediapipe as mp
 import csv
 import pandas as pd
 import pickle
-# from utils import CvFpsCalc
 
-Json = r'D:\Academy\mediapipe\QT5UI-palmar-drama-with-mediapipe-python_2\QT5UI-palmar-drama-with-mediapipe-python-main\QT5UI-palmar-drama-with-mediapipe-python-main\onyx-silo-328614-10cfc73f5e5f.json' 
-Url = ['https://spreadsheets.google.com/feeds']
-Connect = SAC.from_json_keyfile_name(Json, Url)
-GoogleSheets = gspread.authorize(Connect)
-Sheet = GoogleSheets.open_by_key('1eBU8ruawsg7xQ523vcf-fFX8VedEZK6ln1KyA-RxRmA') # 這裡請輸入妳自己的試算表代號
-Sheets = Sheet.sheet1 
+try:
+    Json = './QT5UI-palmar-drama-with-mediapipe-python-main\onyx-silo-328614-10cfc73f5e5f.json' 
+    Url = ['https://spreadsheets.google.com/feeds']
+    Connect = SAC.from_json_keyfile_name(Json, Url)
+    GoogleSheets = gspread.authorize(Connect)
+    Sheet = GoogleSheets.open_by_key('1eBU8ruawsg7xQ523vcf-fFX8VedEZK6ln1KyA-RxRmA') # 這裡請輸入妳自己的試算表代號
+    Sheets = Sheet.sheet1 
+except:
+    print("The cloud sheet data is not working. Please check the internet or the file path.")
+    pass
+
 
 
 def get_args():
@@ -602,6 +604,20 @@ def draw_pose_landmarks(
     #                 0] > visibility_th:
     #             cv2.line(image, landmark_point[30][1], landmark_point[32][1],
     #                     link_color, 2)
+    # angle line
+    if len(landmark_point) > 0:
+
+        if landmark_point[12][0] > visibility_th and landmark_point[11][0] > visibility_th:
+            marker_1 = list(np.array(landmark_point[12][1]))
+            marker_2 = list(np.array(landmark_point[11][1]))
+            marker_s = (int(marker_1[0] + 0.46*(marker_2[0]-marker_1[0])), int(marker_1[1] + 0.46*(marker_2[1]-marker_1[1])))
+            cv2.line(image, landmark_point[12][1], marker_s, landmark_color, 2)
+        
+        if landmark_point[12][0] > visibility_th and landmark_point[16][0] > visibility_th:
+            marker_1 = list(np.array(landmark_point[12][1]))
+            marker_2 = list(np.array(landmark_point[16][1]))
+            marker_w = (int(marker_1[0] + 0.46*(marker_2[0]-marker_1[0])), int(marker_1[1] + 0.46*(marker_2[1]-marker_1[1])))
+            cv2.line(image, landmark_point[12][1], marker_w, landmark_color, 2)
     
     return image
 
@@ -774,8 +790,8 @@ def detection(image,lh_l, fa_l, po_l, dp, self):
         height_s = ((landmarks[mp.solutions.holistic.PoseLandmark.RIGHT_SHOULDER.value].y)-
         (landmarks[mp.solutions.holistic.PoseLandmark.RIGHT_WRIST.value].y))**2
 
-        print(landmarks[mp.solutions.holistic.PoseLandmark.RIGHT_SHOULDER.value].y , 
-        landmarks[mp.solutions.holistic.PoseLandmark.RIGHT_WRIST.value].y)
+        # print(landmarks[mp.solutions.holistic.PoseLandmark.RIGHT_SHOULDER.value].y , 
+        # landmarks[mp.solutions.holistic.PoseLandmark.RIGHT_WRIST.value].y)
 
         if ((landmarks[mp.solutions.holistic.PoseLandmark.RIGHT_SHOULDER.value].y+0.12)<
         (landmarks[mp.solutions.holistic.PoseLandmark.RIGHT_WRIST.value].y)):
@@ -805,7 +821,7 @@ def detection(image,lh_l, fa_l, po_l, dp, self):
         height_h = ((landmarks[mp.solutions.holistic.PoseLandmark.LEFT_WRIST.value].y)-
         (landmarks[mp.solutions.holistic.PoseLandmark.RIGHT_WRIST.value].y))**2
 
-        if ((landmarks[mp.solutions.holistic.PoseLandmark.LEFT_WRIST.value].y+0.18)<
+        if ((landmarks[mp.solutions.holistic.PoseLandmark.LEFT_WRIST.value].y+0.1)<
         (landmarks[mp.solutions.holistic.PoseLandmark.RIGHT_WRIST.value].y)):
 
             cv2.rectangle(image, 
@@ -815,7 +831,7 @@ def detection(image,lh_l, fa_l, po_l, dp, self):
             cv2.putText(image, 'Too Low', coords_ri, 
                         cv2.FONT_HERSHEY_SIMPLEX, 1, (255, 255, 255), 2, cv2.LINE_AA)
 
-        if ((landmarks[mp.solutions.holistic.PoseLandmark.LEFT_WRIST.value].y+0.03)>
+        if ((landmarks[mp.solutions.holistic.PoseLandmark.LEFT_WRIST.value].y-0.05)>
         (landmarks[mp.solutions.holistic.PoseLandmark.RIGHT_WRIST.value].y)):
 
             cv2.rectangle(image, 
@@ -917,13 +933,15 @@ def detection(image,lh_l, fa_l, po_l, dp, self):
     con = list(range(2))
     con[0] = gclass
     con[1] = str((round(body_language_prob[np.argmax(body_language_prob)],3))+(accu*100//1)/100)
-    
-    Sheets.append_row(con)
     # con[2] = accu*100//1/100
-
-    # with open('try.csv', mode='a', newline='') as f:
-    #    csv_writer = csv.writer(f, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
-    #    csv_writer.writerow(con)
+    
+    try :
+        Sheets.append_row(con)
+    
+    except:
+        with open('try.csv', mode='a', newline='') as f:
+            csv_writer = csv.writer(f, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
+            csv_writer.writerow(con)
 
 
 
@@ -935,15 +953,15 @@ def detection(image,lh_l, fa_l, po_l, dp, self):
     if (body_language_class is not None) and (body_language_prob is not None):
         # Display Class
         cv2.putText(img_s, 'CLASS'
-                    , (15,72), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (100, 100, 100), 1, cv2.LINE_AA)
+                    , (50,120), cv2.FONT_HERSHEY_SIMPLEX, 1, (100, 100, 100), 1, cv2.LINE_AA)
         cv2.putText(img_s, body_language_class.split(' ')[0]
-                    , (10,100), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 0, 0), 2, cv2.LINE_AA)
+                    , (50,180), cv2.FONT_HERSHEY_SIMPLEX, 2, (0, 0, 0), 2, cv2.LINE_AA)
         
         # Display Probability
         cv2.putText(img_s, 'PROB'
-                    , (15,20), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (100, 100, 100), 1, cv2.LINE_AA)
+                    , (350,120), cv2.FONT_HERSHEY_SIMPLEX, 1, (100, 100, 100), 1, cv2.LINE_AA)
         cv2.putText(img_s, str(round(body_language_prob[np.argmax(body_language_prob)],2))
-                    , (10,48), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 0, 0), 2, cv2.LINE_AA)
+                    , (350,180), cv2.FONT_HERSHEY_SIMPLEX, 2, (0, 0, 0), 2, cv2.LINE_AA)
 
     seconds = time.time()
     de_sec = seconds*10
@@ -1141,8 +1159,10 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.image_file = False
         self.setupUi(self)
         self.initUI()
-        self.hand_size = 0.6
+        # self.hand_size = 0.6
         # self.detector = HandDetector()
+        self.min_detection_confidence = 0.45
+        self.min_tracking_confidence = 0.33
         self.videoFPS = 30
         self.image = False
         self.video = False
@@ -1151,7 +1171,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.detect = False
         # self.model = predict(model='models/inference_model1')
         self.cap = None
-        self.predict = False
+        self.predict_status = False
         self.mode_key = 0
         self.results = None
 
@@ -1196,8 +1216,8 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.actionCloseCamera.triggered.connect(self.close_camera)
         self.actionPredict.triggered.connect(self.predict)
         self.actionSelectedCamera.triggered.connect(self.select_camera)
-        self.actionHandSize.triggered.connect(self.changeHandSize)
-        self.actionModelFile.triggered.connect(self.changeModelFile)
+        # self.actionHandSize.triggered.connect(self.changeHandSize)
+        # self.actionModelFile.triggered.connect(self.changeModelFile)
         self.actionMinDetectionConfidence.triggered.connect(self.changeMinDetectionConfidence)
         self.actionMinTrackingConfidence.triggered.connect(self.changeMinTrackingConfidence)
         self.actionExit.triggered.connect(self.exit)
@@ -1207,9 +1227,9 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             self.cap.release()
  
         # self.maya(action=False)
-        label_show(label=self.labelResult, image=cv2.imread('src/result_default.png'))
+        # label_show(label=self.labelResult, image=cv2.imread('src/result_default.png'))
         # label_show(label=self.labelVideoSample, image=cv2.imread('src/MAYA_default.png'))
-        label_show(label=self.labelImageOrVideo, image=cv2.imread('src/default.png'))
+        # label_show(label=self.labelImageOrVideo, image=cv2.imread('src/default.png'))
         app = QApplication.instance()
         # 退出应用程序
         app.quit()
@@ -1442,7 +1462,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
     def load_video_T2(self):
         self.playlist.clear()   
-        f = './QT5UI-palmar-drama-with-mediapipe-python-main/videos/YOU.mp4'  
+        f = './QT5UI-palmar-drama-with-mediapipe-python-main/videos/YOU_S.mp4'  
         self.playlist.addMedia(QMediaContent(QUrl.fromLocalFile(f))) 
         # self.mediaPlayer.setMedia(QMediaContent(QUrl.fromLocalFile(f)))
 
@@ -1532,8 +1552,8 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         args = get_args()
        
         model_complexity = args.model_complexity
-        min_detection_confidence = args.min_detection_confidence
-        min_tracking_confidence = args.min_tracking_confidence
+        min_detection_confidence = self.min_detection_confidence
+        min_tracking_confidence = self.min_tracking_confidence
 
         # モデルロード #############################################################
         mp_holistic = mp.solutions.holistic
@@ -1773,14 +1793,15 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
     def predict(self):
         self.detect = True
-        self.predict = True
+        self.predict_status = True
         self.camera = True
         # 引数解析 #################################################################
         args = get_args()
        
         model_complexity = args.model_complexity
-        min_detection_confidence = args.min_detection_confidence
-        min_tracking_confidence = args.min_tracking_confidence
+        
+        min_detection_confidence = self.min_detection_confidence
+        min_tracking_confidence = self.min_tracking_confidence
 
         # モデルロード #############################################################
         mp_holistic = mp.solutions.holistic
@@ -1801,14 +1822,15 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         # fig.subplots_adjust(left=0.0, right=1, bottom=0, top=1)
 
 
-
-        dataTitle = ['gesture','value']
-        Sheets.clear()
-        Sheets.append_row(dataTitle)
-
-        # with open('try.csv', mode='w', newline='') as f:
-        #     csv_writer = csv.writer(f, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
-        #     csv_writer.writerow()
+        try:
+            dataTitle = ['gesture','value']
+            Sheets.clear()
+            Sheets.append_row(dataTitle)
+        except:
+            dataTitle = ['gesture','value']
+            with open('try.csv', mode='w', newline='') as f:
+                csv_writer = csv.writer(f, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
+                csv_writer.writerow(dataTitle)
 
 
 
@@ -1911,8 +1933,8 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             t_pose_landmarks = results.pose_world_landmarks
 
             if (face_landmarks is None) or (pose_landmarks is None) or (right_hand_landmarks is None):
-                # img_r = cv2.imread('./image/result_default.png')
-                # label_show(label=self.labelResult, image=img_r)
+                img_r = cv2.imread('./QT5UI-palmar-drama-with-mediapipe-python-main/image/result_default.png')
+                label_show(label=self.labelResult, image=img_r)
                 seconds = time.time()
                 de_sec = seconds*10
                 count = (de_sec//1)%10
@@ -1932,10 +1954,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
                     # image has been flipped <swap R and L>
             
             if face_landmarks is not None:
-            # 外接矩形の計算
-            # brect = calc_bounding_rect(debug_image, face_landmarks)
-            # 描画
-            # キーポイント
+            
                 for index, landmark in enumerate(face_landmarks.landmark):
                     if landmark.visibility < 0 or landmark.presence < 0:
                         continue
@@ -2073,9 +2092,9 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             self.cap.release()
             self.print_log(log_words='camera has been closed')
             # self.maya(action=False)
-            label_show(label=self.labelResult, image=cv2.imread('src/result_default.png'))
+            label_show(label=self.labelResult, image=cv2.imread('./QT5UI-palmar-drama-with-mediapipe-python-main/src/result_default.png'))
             # label_show(label=self.labelVideoSample, image=cv2.imread('src/MAYA_default.png'))
-            label_show(label=self.labelImageOrVideo, image=cv2.imread('src/default.png'))
+            label_show(label=self.labelImageOrVideo, image=cv2.imread('./QT5UI-palmar-drama-with-mediapipe-python-main/src/default.png'))
 
     def select_camera(self):
         if self.camera_selected == 0:
@@ -2099,13 +2118,13 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
     def changeMinDetectionConfidence(self):
         number, ok = QInputDialog.getDouble(self, "MinDetectionConfidence", "(0-1)")
-        self.detector.min_detection_confidence = number
-        self.print_log(log_words=f'MinDetectionConfidence: {str(number)}')
+        self.min_detection_confidence = number
+        self.print_log(log_words=f'Min_Detection_Confidence: {str(number)}')
 
     def changeMinTrackingConfidence(self):
         number, ok = QInputDialog.getDouble(self, "MinTrackingConfidence", "(0-1)")
-        self.detector.min_tracking_confidence = number
-        self.print_log(log_words=f'MinTrackingConfidence: {str(number)}')
+        self.min_tracking_confidence = number
+        self.print_log(log_words=f'Min_Tracking_Confidence: {str(number)}')
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)
